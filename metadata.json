@@ -1,0 +1,6 @@
+{
+  "name": "AI SaaS Starter",
+  "description": "AI SaaS Starter com Next.js (App Router), Supabase Auth & PostgreSQL, OpenAI Streaming e controle de cotas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
