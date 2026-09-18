@@ -41,7 +41,7 @@ Starter kit para produtos SaaS de Inteligência Artificial com arquitetura moder
        |                                  |     - UPDATE profiles                   |
        |                                  |       SET credits_used = credits_used+1 |
        |                                  +---------------------------------------->|
-       v                                                                            
+       v                                                                            v
 
 
 📦 Stack Tecnológica
@@ -123,8 +123,9 @@ Siga o passo a passo abaixo para configurar e rodar o projeto em sua máquina:
 
 1. Clone o repositório
 
-git clone https://github.com/LaGiGa/ai-saas-starter.git
-cd ai-saas-starter
+git clone https://github.com/seu-usuario/seu-repositorio.git
+cd seu-repositorio
+
 
 2. Instale as dependências
 
@@ -180,3 +181,7 @@ Streaming HTTP em Tempo Real: Conexão com ReadableStream decodificada chunk-a-c
 Persistência: Ao término da resposta, armazena mensagens no PostgreSQL e incrementa atomicamente o credits_used.
 
 Dashboard & Sidebar: Barra lateral retrátil com histórico de conversas, contador visual de créditos (X/20), criação de novas conversas e botão para reset de créditos em modo desenvolvimento.
+
+## 📄 Licença
+
+Distribuído sob a licença MIT. Sinta-se livre para usar em seu portfólio, adaptar e estender.
