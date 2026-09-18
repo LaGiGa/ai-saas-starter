@@ -4,46 +4,38 @@ Starter kit para produtos SaaS de Inteligência Artificial com arquitetura moder
 
 🚀 Arquitetura & Fluxo da Rota de Streaming com Controle de Cota
 
-+-------------+                 +--------------------+                  +------------------------+
-|   Cliente   |                 | Next.js API Route  |                  |    Supabase (Postgres) |
-|  (Browser)  |                 |     /api/chat      |                  |                        |
-+------+------+                 +---------+----------+                  +-----------+------------+
-       |                                  |                                         |
-       |  1. POST /api/chat               |                                         |
-       |  { conversationId, messages }    |                                         |
-       +--------------------------------->|                                         |
-       |                                  |  2. Consulta cota no banco              |
-       |                                  |     SELECT credits_used, credits_limit  |
-       |                                  |     FROM profiles WHERE id = user_id    |
-       |                                  +---------------------------------------->|
-       |                                  |<----------------------------------------+
-       |                                  |     Retorna saldo                       |
-       |                                  |                                         |
-       |  [SE credits_used >= limit]      |                                         |
-       |  HTTP 403 Forbidden              |                                         |
-       |<---------------------------------+                                         |
-       |  (UI exibe modal amigável)       |                                         |
-       |                                  |                                         |
-       |  [SE saldo disponível]           |                                         |
-       |                                  |  3. Chama OpenAI com streaming          |
-       |                                  |     openai.chat.completions.create(     |
-       |                                  |       { stream: true, ... }             |
-       |                                  |     )                                   |
-       |                                  +----------------+                        |
-       |                                                   |                        |
-       |  4. Server-Sent Events / ReadableStream Chunks    v                        |
-       |<--------------------------------------------------+                        |
-       |  (Efeito máquina de escrever em tempo real)                                |
-       |                                  |                                         |
-       |  5. Fim do stream                |  6. Persistência e Débito               |
-       |                                  |     - Grava msg do usuário              |
-       |                                  |     - Grava resposta do assistente      |
-       |                                  |     - UPDATE profiles                   |
-       |                                  |       SET credits_used = credits_used+1 |
-       |                                  +---------------------------------------->|
-       v                                                                            v
+sequenceDiagram
+    participant C as Cliente (Browser)
+    participant API as Next.js API (/api/chat)
+    participant DB as Supabase (PostgreSQL)
+    participant AI as Engine de IA (OpenAI)
 
+    C->>API: 1. POST /api/chat { conversationId, messages }
+    
+    rect rgb(248, 250, 252)
+    Note over API,DB: Verificação de Cota
+    API->>DB: 2. SELECT credits_used, credits_limit FROM profiles WHERE id = user_id
+    DB-->>API: Retorna saldo do usuário
+    end
 
+    alt Cota Excedida (credits_used >= limit)
+        API-->>C: HTTP 403 Forbidden (UI exibe modal amigável)
+    else Saldo Disponível
+        rect rgb(236, 253, 245)
+        Note over API,AI: Geração com Streaming
+        API->>AI: 3. openai.chat.completions.create({ stream: true })
+        AI-->>API: Início do Stream
+        API-->>C: 4. Server-Sent Events / Chunks (Efeito máquina de escrever em tempo real)
+        AI-->>API: 5. Fim do stream
+        end
+        
+        rect rgb(255, 251, 235)
+        Note over API,DB: Persistência & Débito
+        API->>DB: 6. Grava mensagens (usuário e assistente)
+        API->>DB: 7. UPDATE profiles SET credits_used = credits_used + 1
+        end
+    end
+    
 📦 Stack Tecnológica
 
 Framework: Next.js 15+ (App Router)
