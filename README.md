@@ -1,40 +1,44 @@
-AI SaaS Starter (Next.js + Supabase + OpenAI)
+## 🚀 Arquitetura & Fluxo da Rota de Streaming com Controle de Cota
 
-Starter kit para produtos SaaS de Inteligência Artificial com arquitetura moderna, consumo de streaming HTTP em tempo real (ReadableStream/SSE), autenticação Supabase Auth, persistência PostgreSQL e controle rigoroso de cota de 20 mensagens por usuário.
+```mermaid
+flowchart TD
+    subgraph S1["1. Interface do Usuário (Cliente)"]
+        A["💻 Chat UI (Browser)<br/>Usuário envia mensagem"]
+        B["🌐 Requisição POST /api/chat<br/>{ conversationId, messages }"]
+        A --> B
+    end
 
-🚀 Arquitetura & Fluxo da Rota de Streaming com Controle de Cota
+    subgraph S2["2. API Route & Validação de Cota"]
+        C["🔍 Consulta Cota no Supabase<br/>SELECT credits_used, credits_limit"]
+        D{"Possui saldo?"}
+        B --> C
+        C --> D
+        D -- "Não (Excedeu limite)" --> E["⛔ Retorna HTTP 403 Forbidden<br/>UI exibe aviso amigável"]
+    end
 
-sequenceDiagram
-    participant C as Cliente (Browser)
-    participant API as Next.js API (/api/chat)
-    participant DB as Supabase (PostgreSQL)
-    participant AI as Engine de IA (OpenAI)
+    subgraph S3["3. Engine de IA & Streaming"]
+        F["🧠 Chamada OpenAI API<br/>(stream: true)"]
+        G["🌊 Server-Sent Events (SSE)<br/>Retorna chunks (máquina de escrever)"]
+        D -- "Sim (Tem saldo)" --> F
+        F --> G
+    end
 
-    C->>API: 1. POST /api/chat { conversationId, messages }
+    subgraph S4["4. Persistência e Débito (Pós-Stream)"]
+        H[("🗄️ PostgreSQL (Supabase)<br/>Salva mensagens no histórico")]
+        I["💸 Atualiza Cota<br/>UPDATE profiles SET credits_used + 1"]
+        H --> I
+    end
+
+    G --> H
+    G -. "Retorna texto em tempo real" .-> A
+
+    classDef step fill:#1e293b,stroke:#334155,stroke-width:1.5px,color:#fff;
+    classDef success fill:#064e3b,stroke:#059669,stroke-width:2px,color:#fff;
+    classDef warning fill:#78350f,stroke:#d97706,stroke-width:2px,color:#fff;
     
-    rect rgb(248, 250, 252)
-    Note over API,DB: Verificação de Cota
-    API->>DB: 2. SELECT credits_used, credits_limit FROM profiles WHERE id = user_id
-    DB-->>API: Retorna saldo do usuário
-    end
-
-    alt Cota Excedida (credits_used >= limit)
-        API-->>C: HTTP 403 Forbidden (UI exibe modal amigável)
-    else Saldo Disponível
-        rect rgb(236, 253, 245)
-        Note over API,AI: Geração com Streaming
-        API->>AI: 3. openai.chat.completions.create({ stream: true })
-        AI-->>API: Início do Stream
-        API-->>C: 4. Server-Sent Events / Chunks (Efeito máquina de escrever em tempo real)
-        AI-->>API: 5. Fim do stream
-        end
-        
-        rect rgb(255, 251, 235)
-        Note over API,DB: Persistência & Débito
-        API->>DB: 6. Grava mensagens (usuário e assistente)
-        API->>DB: 7. UPDATE profiles SET credits_used = credits_used + 1
-        end
-    end
+    class S1,S2,S3,S4 step;
+    class F,G success;
+    class E warning;
     
 📦 Stack Tecnológica
 
