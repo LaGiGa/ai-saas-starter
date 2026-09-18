@@ -1,4 +1,4 @@
-# Projeto 01 — AI SaaS Starter (Next.js + Supabase + OpenAI)
+#AI SaaS Starter (Next.js + Supabase + OpenAI)
 
 > Starter kit para produtos SaaS de Inteligência Artificial com arquitetura moderna, consumo de streaming HTTP em tempo real (ReadableStream/SSE), autenticação Supabase Auth, persistência PostgreSQL e controle rigoroso de cota de 20 mensagens por usuário.
 
